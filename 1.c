@@ -148,7 +148,7 @@ int main() {
     recieve_codarray = (int *)malloc(codarraylen * sizeof(int));
 
 
-    double ebn0s = 4.5;//SNR
+    double ebn0s = 5;//SNR
     double ebn0;
     double sigma;
     //sigma = sqrt(5.0 / (pow(10, ebn0s / 10)));

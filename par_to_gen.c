@@ -16,7 +16,7 @@ int main()  {
     int H1row,H1column;
 
     FILE *fpr;
-    fpr = fopen("paritymatrixCmask.txt","r");
+    fpr = fopen("H4.txt","r");
     fscanf(fpr,"%d",&e);
     fscanf(fpr, "%d",&n);
     fscanf(fpr, "%d",&rc);
@@ -170,21 +170,21 @@ int main()  {
 
     int a = 0;
     int a1 = 0;
-    int c[1320];
-    int c1[1320];
+    int c[512];
+    int c1[512];
     m = 0;
     int **Hsyst;
-    int Hsystrow = 1320;
-    int Hsystcolumn = 1320;
+    int Hsystrow = 512;
+    int Hsystcolumn = 512;
     int **Hsyst1;
-    int Hsyst1row = 1320;
-    int Hsyst1column = 1320;
+    int Hsyst1row = 512;
+    int Hsyst1column = 512;
     int **Gsys;
-    int Gsysrow = 1320;
-    int Gsyscolumn = 2640;
+    int Gsysrow = 512;
+    int Gsyscolumn = 1024;
     int **G;
-    int Grow = 1320;
-    int Gcolumn = 2640;
+    int Grow = 512;
+    int Gcolumn = 1024;
 
     Hsyst = (int **)malloc(Hsystrow * sizeof(int *));
     for (i = 0; i < Hsystrow; i++) Hsyst[i] = (int *)malloc(Hsystcolumn * sizeof(int));
@@ -215,21 +215,21 @@ int main()  {
             a1++;
         }
     }
-    for (i = 0; i < 1320; i++) printf("%d ", c[i]);
+    for (i = 0; i <512; i++) printf("%d ", c[i]);
     printf("\n");
-    for (i = 0; i < 1320; i++) printf("%d ",c1[i]);
+    for (i = 0; i <512; i++) printf("%d ",c1[i]);
     printf("\n");
     m = 0;
     for (j = 0; j < n; j++) {
         //m = 0;
-        if (j < 1320) {
+        if (j < 512) {
             for (i = 0; i < rc; i++) {
                 Gsys[i][j] = Hsyst[i][j];
             }
         } else {
             /*for (i = 0; i < rc; i++) {*/
                 for (k = rc; k < n; k++) {
-                    Gsys[m][k] = Hsyst1[k-1320][j-1320];
+                    Gsys[m][k] = Hsyst1[k-512][j-512];
                 }  
                 m++;
             //}
@@ -249,7 +249,7 @@ int main()  {
         if (c[a] == j) {
             printf("nna\n");
             for (i = 0; i < rc; i++) {
-                G[i][j] = Gsys[i][1320 + a];
+                G[i][j] = Gsys[i][512 + a];
             }
             a++;
         }
@@ -271,7 +271,7 @@ int main()  {
     }
 
     FILE *outfp;
-    outfp = fopen("generator1.txt","w");
+    outfp = fopen("generatorH4.txt","w");
     for (int i = 0; i < rc; i++) {
         for (int j = 0; j < n; j++) {
             fprintf(outfp,"%d ",G[i][j]);
