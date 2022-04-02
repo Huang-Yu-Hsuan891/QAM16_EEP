@@ -16,7 +16,7 @@ int main()  {
     int H1row,H1column;
 
     FILE *fpr;
-    fpr = fopen("H4.txt","r");
+    fpr = fopen("eep461.txt","r");
     fscanf(fpr,"%d",&e);
     fscanf(fpr, "%d",&n);
     fscanf(fpr, "%d",&rc);
@@ -143,7 +143,7 @@ int main()  {
         printf("\n");
     }
     FILE *outfp1;
-    outfp1 = fopen("paritycheckmatrix.txt","w");
+    outfp1 = fopen("paritycheckmatrixeep461.txt","w");
     fprintf(outfp1,"%d ",n);
     fprintf(outfp1,"%d ",rc);
     fprintf(outfp1,"\n");
@@ -170,21 +170,21 @@ int main()  {
 
     int a = 0;
     int a1 = 0;
-    int c[512];
-    int c1[512];
+    int c[rc];
+    int c1[rc];
     m = 0;
     int **Hsyst;
-    int Hsystrow = 512;
-    int Hsystcolumn = 512;
+    int Hsystrow = rc;
+    int Hsystcolumn = rc;
     int **Hsyst1;
-    int Hsyst1row = 512;
-    int Hsyst1column = 512;
+    int Hsyst1row = rc;
+    int Hsyst1column = rc;
     int **Gsys;
-    int Gsysrow = 512;
-    int Gsyscolumn = 1024;
+    int Gsysrow = rc;
+    int Gsyscolumn = n;
     int **G;
-    int Grow = 512;
-    int Gcolumn = 1024;
+    int Grow = rc;
+    int Gcolumn = n;
 
     Hsyst = (int **)malloc(Hsystrow * sizeof(int *));
     for (i = 0; i < Hsystrow; i++) Hsyst[i] = (int *)malloc(Hsystcolumn * sizeof(int));
@@ -215,21 +215,21 @@ int main()  {
             a1++;
         }
     }
-    for (i = 0; i <512; i++) printf("%d ", c[i]);
+    for (i = 0; i <rc; i++) printf("%d ", c[i]);
     printf("\n");
-    for (i = 0; i <512; i++) printf("%d ",c1[i]);
+    for (i = 0; i <rc; i++) printf("%d ",c1[i]);
     printf("\n");
     m = 0;
     for (j = 0; j < n; j++) {
         //m = 0;
-        if (j < 512) {
+        if (j < rc) {
             for (i = 0; i < rc; i++) {
                 Gsys[i][j] = Hsyst[i][j];
             }
         } else {
             /*for (i = 0; i < rc; i++) {*/
                 for (k = rc; k < n; k++) {
-                    Gsys[m][k] = Hsyst1[k-512][j-512];
+                    Gsys[m][k] = Hsyst1[k-rc][j-rc];
                 }  
                 m++;
             //}
@@ -249,7 +249,7 @@ int main()  {
         if (c[a] == j) {
             printf("nna\n");
             for (i = 0; i < rc; i++) {
-                G[i][j] = Gsys[i][512 + a];
+                G[i][j] = Gsys[i][rc + a];
             }
             a++;
         }
@@ -271,7 +271,7 @@ int main()  {
     }
 
     FILE *outfp;
-    outfp = fopen("generatorH4.txt","w");
+    outfp = fopen("generatoreep461.txt","w");
     for (int i = 0; i < rc; i++) {
         for (int j = 0; j < n; j++) {
             fprintf(outfp,"%d ",G[i][j]);

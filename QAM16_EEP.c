@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-unsigned long long SEED =  312891; // have value //unsigned long long SEED = 3881111387891;
+unsigned long long SEED =  101; // have value //unsigned long long SEED = 3881111387891;
 unsigned long long RANV;
 int RANI = 0;
 double Ranq1();
@@ -17,16 +17,16 @@ void x_estimate_m(int i, double a, double b);
 void table_receive(int i, double a, double b);
 
 double **s;
-int srow = 256;  // Na / 4 transmitt how many symbols (transmitter)
+int srow = 1844;  // Na / 4 transmitt how many symbols (transmitter)
 int scolumn = 2; //1 symbol vector have 2 index
 
 double **m_estimate;
-int mrow = 256;  // Na / 4 transmitt estimate symbols (receiver+estimate)
+int mrow = srow;  // Na / 4 transmitt estimate symbols (receiver+estimate)
 int mcolumn = 2; //1 symbol vector have 2 index
 
 int **receive_sym;
 
-int receivesymrow = 256; // Na/4 transmitt how many symbols
+int receivesymrow = srow; // Na/4 transmitt how many symbols
 int receivesymcolumn = 4; //16QAM PRESENT 1symbol = 4bits
 
 int main() {
@@ -44,7 +44,7 @@ int main() {
     int num = 0;           // how many blocks transmitted 
     double x, y;           // for noise
     
-    int krc = 512;                // krc = 512
+    int krc = 3688;                // krc = 512
     int **G;
     int Glenrow = krc;
     int Glencolumn = n;
@@ -59,7 +59,7 @@ int main() {
 
     // open file
     FILE *fpr;
-    fpr=fopen("paritycheckmatrix.txt","r");
+    fpr=fopen("paritycheckmatrixeep922.txt","r");
     fscanf(fpr,"%d",&n);
     fscanf(fpr,"%d",&rc);
     printf("column = %d; row = %d\n", n, rc);
@@ -99,7 +99,7 @@ int main() {
     // close file
     // OPEN FILE
     FILE *fpr1;
-    fpr1=fopen("generatorH4.txt","r");
+    fpr1=fopen("generatoreep922.txt","r");
     printf("column = %d\n", n);
     printf("row = %d\n", krc);
     Glenrow = krc;
@@ -121,7 +121,7 @@ int main() {
     codarraylen = n;
     codarray = (int *)malloc(codarraylen * sizeof(int));
     int **sym;         // present symbol ( 4bits to 1symbols)
-    int symrow = 256; // Na/4 transmitt how many symbols
+    int symrow = srow; // Na/4 transmitt how many symbols
     int symcolumn = 4; //16QAM PRESENT 1symbol = 4bits
     sym = (int **)malloc(symrow * sizeof(int *));
     for (i = 0; i < symrow; i++)
@@ -131,7 +131,7 @@ int main() {
         s[i] = (double *)malloc(scolumn * sizeof(double));
     
     double **x_receive;
-    int xrow = 256;  // Na / 4 receive how many symbols (receiver)
+    int xrow = srow;  // Na / 4 receive how many symbols (receiver)
     int xcolumn = 2; //1 symbol vector have 2 index
     x_receive = (double **)malloc(xrow * sizeof(double *));
     for (i = 0; i < xrow; i++)
@@ -148,7 +148,7 @@ int main() {
     recieve_codarray = (int *)malloc(codarraylen * sizeof(int));
 
 
-    double ebn0s = 4.5;//SNR
+    double ebn0s = 4;//SNR
     double ebn0;
     double sigma;
     //sigma = sqrt(5.0 / (pow(10, ebn0s / 10)));
@@ -347,7 +347,7 @@ int main() {
         for (j = 0; j < qijcolumn; j++)                               // initialization
             for (i = 0; i < qijrow; i++) qij[i][j] = Lj[j];
         // message passing, for predetermined threshold = 200
-        for (k = 0; k < 200 && restart != rc; k++) {
+        for (k = 0; k < 100 && restart != rc; k++) {
             restart = 0;
             //printf("k = %d ",k);
             // bottom-up
@@ -427,7 +427,7 @@ int main() {
     FER = (double)100.0/num;
     printf("totalerror = %d, BER = %g, FER = %g\n",totalerror,BER,FER);
     FILE *outfp1; 
-        outfp1 = fopen("QAM16_EEP.txt","a");
+        outfp1 = fopen("QAM16_EEP_e922_iteration100.txt","a");
         fprintf(outfp1,"SNR = %g ; BER = %g ;FER = %g\n", ebn0s, BER,FER);
     fclose(outfp1);
     return 0;
