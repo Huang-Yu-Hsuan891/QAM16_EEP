@@ -16,7 +16,7 @@ int main()  {
     int H1row,H1column;
 
     FILE *fpr;
-    fpr = fopen("eep461.txt","r");
+    fpr = fopen("eep922_vr1.txt","r");
     fscanf(fpr,"%d",&e);
     fscanf(fpr, "%d",&n);
     fscanf(fpr, "%d",&rc);
@@ -142,8 +142,8 @@ int main()  {
         }
         printf("\n");
     }
-    FILE *outfp1;
-    outfp1 = fopen("paritycheckmatrixeep461.txt","w");
+    /*FILE *outfp1;
+    outfp1 = fopen("paritycheckmatrixeep922_vr1.txt","w");
     fprintf(outfp1,"%d ",n);
     fprintf(outfp1,"%d ",rc);
     fprintf(outfp1,"\n");
@@ -166,7 +166,7 @@ int main()  {
     }
 
     
-    fclose(outfp1);
+    fclose(outfp1);*/
 
     int a = 0;
     int a1 = 0;
@@ -270,15 +270,15 @@ int main()  {
         printf("\n");
     }
 
-    FILE *outfp;
-    outfp = fopen("generatoreep461.txt","w");
+   /* FILE *outfp;
+    outfp = fopen("generatoreep922_vr1.txt","w");
     for (int i = 0; i < rc; i++) {
         for (int j = 0; j < n; j++) {
             fprintf(outfp,"%d ",G[i][j]);
         }
         fprintf(outfp,"\n");
     }
-    fclose(outfp);
+    fclose(outfp);*/
     printf("\n\n");
     int temp1;
     for (i = 0; i < rc; i++) {

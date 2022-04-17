@@ -3,18 +3,19 @@
 #include <stdlib.h>
 #include <time.h>
 
-unsigned long long SEED =  101; // have value //unsigned long long SEED = 3881111387891;
+unsigned long long SEED =  10291; // have value //unsigned long long SEED = 3881111387891;
 unsigned long long RANV;
 int RANI = 0;
 double Ranq1();
 void normal(double sig, double *n1, double *n2);
 double CHK(double L1, double L2);
 double table[8] = {0.65, 0.55, 0.45, 0.35, 0.25, 0.15, 0.05, 0};
+double Q =1;
 
 double minimum(double a1, double a2, double a3, double a4, double a5, double a6, double a7, double a8);
 void table_symbol(int i, int a, int b, int c, int d);
-void x_estimate_m(int i, double a, double b);
-void table_receive(int i, double a, double b);
+//void x_estimate_m(int i, double a, double b);
+//void table_receive(int i, double a, double b);
 
 double **s;
 int srow = 1844;  // Na / 4 transmitt how many symbols (transmitter)
@@ -32,34 +33,31 @@ int receivesymcolumn = 4; //16QAM PRESENT 1symbol = 4bits
 int main() {
     // for declaration
     int i, j, k, m;                  //for counting
-    int n, rc;                       // n is column = 1024 and rc is row = 512
+    int n, rc;                       // n is column = 7376 and rc is row = 3688
     int dv, dc;                      // dv: column have #1  = 3 ; and dc: row have #1 = 6
-    int **L = NULL;          // check node connect 6 variable nodes
-    int Llenrow = rc;        // rc = 512
-    int Llencolumn = dc;     // dc = 6
-    int **M = NULL;
-    int Mlenrow = n;       // n = 1024
-    int Mlencolumn = dv;   //dv = 3
-    int error_block = 0;             // receive 100 error block
-    int num = 0;           // how many blocks transmitted 
-    double x, y;           // for noise
+    int **L = NULL;                  // check node connect 6 variable nodes
+    int Llenrow = rc;                // rc = 3688
+    int Llencolumn = dc;             // dc = 6
+    int **M = NULL;                  // variable node connect 3 check nodes
+    int Mlenrow = n;                 // n = 7376
+    int Mlencolumn = dv;             //dv = 3
+    int error_block = 0;             // receive 100(or other numbers) error block
+    int num = 0;                     // how many blocks transmitted 
+    double x, y;                     // for noise
     
-    int krc = 3688;                // krc = 512
+    int krc = 3688;                  // krc = 3688 = rc
     int **G;
     int Glenrow = krc;
-    int Glencolumn = n;
+    int Glencolumn = n = 7376;
     int *u;
     int ulen = krc;
     int temp;     // for changing the order od M and L
     double d1,d2,d3,d4,d5,d6,d7,d8;
     double s1,s2,s3,s4,s5,s6,s7,s8;
 
-
-    
-
     // open file
     FILE *fpr;
-    fpr=fopen("paritycheckmatrixeep922.txt","r");
+    fpr=fopen("paritycheckmatrixeep922_vr1.txt","r");
     fscanf(fpr,"%d",&n);
     fscanf(fpr,"%d",&rc);
     printf("column = %d; row = %d\n", n, rc);
@@ -77,6 +75,7 @@ int main() {
     for (i = 0; i < Llenrow; i++) L[i] = (int *)malloc(Llencolumn * sizeof(int));
     for (j = 0; j < Mlenrow; j++) 
         for (i = 0; i < Mlencolumn; i++) fscanf(fpr,"%d",&M[j][i]);
+    //printf("M[%d][%d] = %d\n\n",j-1,i-1,M[j-1][i-1]);
     for (j = 0; j < n; j++)                 // FOR ORDERING 
         for (i = 0; i < dv; i++) 
             for (m = i; m < dv; m++) 
@@ -85,8 +84,16 @@ int main() {
                     M[j][m] = M[j][i];
                     M[j][i] = temp;
                 }
+    //printf("M[%d][%d] = %d\n\n",j-1,i-1,M[j-1][i-1]);
     for (i = 0; i < Llenrow; i++) 
-        for (j = 0; j < dc; j++) fscanf(fpr,"%d",&L[i][j]);
+    {
+        for (j = 0; j < dc; j++) {
+            fscanf(fpr,"%d",&L[i][j]);
+            printf("%d ",L[i][j]);
+        }
+        printf("\n");
+    }    
+    printf("L[%d][%d] = %d\n\n",i-1,j-1,L[i-1][j-1]);
     for (i = 0; i < rc; i++)                // FOR ORDERING 
         for (j = 0; j < dc; j++) 
             for (m = j; m < dc; m++) 
@@ -97,9 +104,11 @@ int main() {
                 }
     fclose(fpr);
     // close file
-    // OPEN FILE
+    
+    // OPEN FILE of generator
     FILE *fpr1;
-    fpr1=fopen("generatoreep922.txt","r");
+    fpr1=fopen("generatoreep922_vr1.txt","r");
+    krc = rc;
     printf("column = %d\n", n);
     printf("row = %d\n", krc);
     Glenrow = krc;
@@ -109,19 +118,20 @@ int main() {
     for (i = 0; i < Glenrow; i++) 
         for (j = 0; j < Glencolumn; j++) 
             fscanf(fpr1,"%d",&G[i][j]);    
+    printf("G[%d][%d] = %d \n",i-1,j-1,G[i-1][j-1]);
     fclose(fpr1);
      // close file
 
-    ulen = krc; // ulen = 512
+    ulen = krc; // ulen = 3688
     u = (int *)malloc(ulen * sizeof(int));
     
-    
-    int *codarray;          //codeword, Dynamic memory allocation, length = codarraylen
+    int *codarray;          //codeword, Dynamic memory allocation, length = codarraylen = n
     int codarraylen = n;
     codarraylen = n;
     codarray = (int *)malloc(codarraylen * sizeof(int));
     int **sym;         // present symbol ( 4bits to 1symbols)
     int symrow = srow; // Na/4 transmitt how many symbols
+    //printf("symrow = %d\n",symrow);
     int symcolumn = 4; //16QAM PRESENT 1symbol = 4bits
     sym = (int **)malloc(symrow * sizeof(int *));
     for (i = 0; i < symrow; i++)
@@ -151,31 +161,35 @@ int main() {
     double ebn0s = 4;//SNR
     double ebn0;
     double sigma;
-    //sigma = sqrt(5.0 / (pow(10, ebn0s / 10)));
-    sigma = sqrt(1.25 * 2 /* 1/R = 1/0.5 */ / (pow(10, ebn0s / 10)));
+    //sigma = sqrt(1.25* 2 / (pow(10, ebn0s / 10)));
+    sigma = sqrt(2.5 / (pow(10, ebn0s / 10)));
+    //sigma = sqrt(1.25 / (pow(10, ebn0s / 10)));
+   //sigma = sqrt(1.25 * 2 *0.25 / (pow(10, ebn0s / 10)));
+    printf("sigma = %g\n\n",sigma);
     ebn0 = pow(10, ebn0s/10);
-    printf("%g,%g \n", pow(10, ebn0s / 10), sigma);
+    printf("ebn0 = %g, sigma = %g \n", pow(10, ebn0s / 10), sigma);
 
     // for CODE part
     // receive 100 error block
-    double *Lj;             // LLR; LENGTH = 1024
-    int Ljlen = n;          // LENGTH = 1024
+    double *Lj;             // LLR; LENGTH = 7376
+    int Ljlen = n;          // LENGTH = 7376
     Lj = (double *)malloc(Ljlen * sizeof(double));
     double **qij = NULL;    // from down to top
     int qijrow = dv;        // qijrow = dv = 3
-    int qijcolumn = n;      // qijcolumn = n = 1024
+    int qijcolumn = n;      // qijcolumn = n = 7376
     double **uij = NULL;    // from top to down
-    int uijrow = rc;        // uijrow = rc = 512
-    int uijcolumn = dc;     // uijcloumn = dc 3
+    int uijrow = rc;        // uijrow = rc = 3688
+    int uijcolumn = dc;     // uijcloumn = dc  = 6
     
     qijrow = dv;        // qijrow = dv = 3
-    qijcolumn = n;      // qijcolumn = n = 1024
+    qijcolumn = n;      // qijcolumn = n = 7376
     qij = (double **)malloc(qijrow * sizeof(double *));
     for (i = 0; i < qijrow; i++) qij[i] = (double *)malloc(qijcolumn * sizeof(double));    
-    uijrow = rc;        // uijrow = rc = 512
+    uijrow = rc;        // uijrow = rc = 3688
     uijcolumn = dc;     // uijcolumn = dc = 6 
     uij = (double **)malloc(uijrow * sizeof(double *));
     for (i = 0; i < uijrow; i++) uij[i] = (double *)malloc(uijcolumn * sizeof(double));
+
     int restart = 0;
     double tempqij[5]; 
     double tempuij;
@@ -184,9 +198,9 @@ int main() {
     int valL;
     int valL2;
     int *comput;
-    int computlen = n;      // computlen = 1024
+    int computlen = n;      // computlen =7376
     int *comput1;
-    int comput1len = rc;    // comput1len = 512
+    int comput1len = rc;    // comput1len = 3688
     int *comput2;
     int comput2len = rc;
     computlen = n;
@@ -196,9 +210,9 @@ int main() {
     comput2len = rc;
     comput2 = (int *)malloc(comput2len * sizeof(int));
     double *qj;
-    int qjlen = n;     //qjlen = 1024
+    int qjlen = n;     //qjlen = 7376
     int *checkbit;
-    int checkbitlen = rc;   // checkbitlen = 512
+    int checkbitlen = rc;   // checkbitlen = 3688
     qjlen = n;
     qj = (double *)malloc(qjlen * sizeof(double));
     checkbitlen = rc;
@@ -209,12 +223,12 @@ int main() {
     output = (int *)malloc( outputarray * sizeof(int) );
     int error = 0;
     int totalerror = 0;
-    double BER;
-    double FER;
+    double BER = 0;
+    double FER = 0;
+    int stp = 0;
 
     while (error_block < 100/*100*/) {
         for (i = 0; i < codarraylen; i++) codarray[i] = 0;
-        //printf("yes");
         if (num == 0) {
             u[0] = 1;
             u[1] = 0;
@@ -233,125 +247,212 @@ int main() {
             for (i = 0; i < krc - 6; i++) u[i + 6] = (u[i + 1] + u[i]) % 2;
         }//for (i = 0; i < krc; i++) printf("u[%d] = %d ;", i, u[i]);
         num++;
-        printf("codarraylen = %d ",codarraylen);
+        //printf("codarraylen = %d ",codarraylen);
         for (i = 0; i < ulen; i++) 
             if (u[i] == 1) {
                 for (j = 0; j < n; j++) codarray[j] = (codarray[j] + G[i][j]) % 2;
-            }//for (i = 0; i < codarraylen; i++) printf("codarray[%d] = %d ;", i, codarray[i]);
+            }
+        //for (i = 0; i < codarraylen; i++) printf("codarray[%d] = %d ;", i, codarray[i]);
+        //printf("\n\n");
         for (i = 0; i < symrow; i++)
             for (j = 0; j < symcolumn; j++) {
                 sym[i][j] = codarray[4 * i + j];
-                //if (i == 0 || i == 10) printf("sym[%d][%d] = %d; ", i, j, sym[i][j]);
+                if (i == 0 || i == 10) printf("sym[%d][%d] = %d; ", i, j, sym[i][j]);
             }
         for (i = 0; i < srow; i++)
             table_symbol(i, sym[i][0], sym[i][1], sym[i][2], sym[i][3]);
+        
+        sigma = sqrt(2.5 / (pow(10, ebn0s / 10)));
         for(i = 0; i < srow; i++) {
             normal(sigma, &x, &y);
+            if (i == 0) printf("s[%d][0] = %g; s[%d][1] = %g ; x=%g, y = %g\n",i,s[i][0],i,s[i][1],x,y);
             x_receive[i][0] = s[i][0] + x;
             x_receive[i][1] = s[i][1] + y;
+            if(i == 0)printf("x_receive[%d][0] = %g; x_receive[%d][1] = %g\n",i,x_receive[i][0],i,x_receive[i][1]);
         }
+        /*for(i = 0; i < srow/2; i++) {
+            normal(sigma, &x, &y);
+            //if (i == 0) printf("s[%d][0] = %g; s[%d][1] = %g ; x=%g, y = %g\n",i,s[i][0],i,s[i][1],x,y);
+            x_receive[2*i][0] = s[2*i][0] + x;
+            x_receive[2*i][1] = s[2*i][1] + x;
+            x_receive[2*i+1][0] = s[2*i][0] + y;
+            x_receive[2*i+1][1] = s[2*i][1] + y;
+           // if(i == 0)printf("x_receive[%d][0] = %g; x_receive[%d][1] = %g\n",i,x_receive[i][0],i,x_receive[i][1]);
+        }*/
         /*for (i = 0; i < xrow; i++) x_estimate_m(i,x_receive[i][0],x_receive[i][1]);
         for (i = 0; i < receivesymrow; i++) {
             table_receive(i, m_estimate[i][0],m_estimate[i][1]);
             if ( i == 0 || i == 1) printf("receive_sym[%d]= %d %d %d %d\n",i,receive_sym[i][0],receive_sym[i][1],receive_sym[i][2],receive_sym[i][3]);
         }
         for (i = 0; i < codarraylen; i++) recieve_codarray[i] = receive_sym[i/4][i%4];*/
-        
+        //ebn0 = pow(10, ebn0s/10);
         for (i = 0; i < Ljlen; i++) {
             //printf("i = %d\n",i);
             if ((i % 4) == 0) {
                 //FOR L1
-                d1 = pow((x_receive[i / 4][0] + 3),2) + pow((x_receive[i/4][1] + 1),2);         // X1 = 0
-                d2 = pow((x_receive[i / 4][0] + 1),2) + pow((x_receive[i/4][1] + 1),2);
-                d3 = pow((x_receive[i / 4][0] - 1),2) + pow((x_receive[i/4][1] + 1),2);
-                d4 = pow((x_receive[i / 4][0] - 3),2) + pow((x_receive[i/4][1] + 1),2);
-                d5 = pow((x_receive[i / 4][0] + 3),2) + pow((x_receive[i/4][1] + 3),2);
-                d6 = pow((x_receive[i / 4][0] + 1),2) + pow((x_receive[i/4][1] + 3),2);
-                d7 = pow((x_receive[i / 4][0] - 1),2) + pow((x_receive[i/4][1] + 3),2);
-                d8 = pow((x_receive[i / 4][0] - 3),2) + pow((x_receive[i/4][1] + 3),2);
-                s1 = pow((x_receive[i / 4][0] + 3),2) + pow((x_receive[i/4][1] - 1),2);         // X1 = 1
-                s2 = pow((x_receive[i / 4][0] + 1),2) + pow((x_receive[i/4][1] - 1),2);
-                s3 = pow((x_receive[i / 4][0] - 1),2) + pow((x_receive[i/4][1] - 1),2);
-                s4 = pow((x_receive[i / 4][0] - 3),2) + pow((x_receive[i/4][1] - 1),2);
-                s5 = pow((x_receive[i / 4][0] + 3),2) + pow((x_receive[i/4][1] - 3),2);
-                s6 = pow((x_receive[i / 4][0] + 1),2) + pow((x_receive[i/4][1] - 3),2);
-                s7 = pow((x_receive[i / 4][0] - 1),2) + pow((x_receive[i/4][1] - 3),2);
-                s8 = pow((x_receive[i / 4][0] - 3),2) + pow((x_receive[i/4][1] - 3),2);
-                //printf("%g,%g,%g,%g,%g,%g,%g,%g\n",d1,d2,d3,d4,d5,d6,d7,d8);
+                d1 = pow((x_receive[i / 4][0] + 3*Q),2) + pow((x_receive[i/4][1] + 1*Q),2);         // X1 = 0
+                d2 = pow((x_receive[i / 4][0] + 1*Q),2) + pow((x_receive[i/4][1] + 1*Q),2);
+                d3 = pow((x_receive[i / 4][0] - 1*Q),2) + pow((x_receive[i/4][1] + 1*Q),2);
+                d4 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] + 1*Q),2);
+                d5 = pow((x_receive[i / 4][0] + 3*Q),2) + pow((x_receive[i/4][1] + 3*Q),2);
+                d6 = pow((x_receive[i / 4][0] + 1*Q),2) + pow((x_receive[i/4][1] + 3*Q),2);
+                d7 = pow((x_receive[i / 4][0] - 1*Q),2) + pow((x_receive[i/4][1] + 3*Q),2);
+                d8 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] + 3*Q),2);
+                s1 = pow((x_receive[i / 4][0] + 3*Q),2) + pow((x_receive[i/4][1] - 1*Q),2);         // X1 = 1
+                s2 = pow((x_receive[i / 4][0] + 1*Q),2) + pow((x_receive[i/4][1] - 1*Q),2);
+                s3 = pow((x_receive[i / 4][0] - 1*Q),2) + pow((x_receive[i/4][1] - 1*Q),2);
+                s4 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] - 1*Q),2);
+                s5 = pow((x_receive[i / 4][0] + 3*Q),2) + pow((x_receive[i/4][1] - 3*Q),2);
+                s6 = pow((x_receive[i / 4][0] + 1*Q),2) + pow((x_receive[i/4][1] - 3*Q),2);
+                s7 = pow((x_receive[i / 4][0] - 1*Q),2) + pow((x_receive[i/4][1] - 3*Q),2);
+                s8 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] - 3*Q),2);
+                //d1 =/* pow((x_receive[i / 4][0] + 3*Q),2) +*/ pow((x_receive[i/4][1] + 1*Q),2);         // X1 = 0
+                //d2 = pow((x_receive[i / 4][0] + 1*Q),2) + pow((x_receive[i/4][1] + 1*Q),2);
+                //d3 = pow((x_receive[i / 4][0] - 1*Q),2) + pow((x_receive[i/4][1] + 1*Q),2);
+                //d4 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] + 1*Q),2);
+                //d5 =/* pow((x_receive[i / 4][0] + 3*Q),2) + */pow((x_receive[i/4][1] + 3*Q),2);
+                //d6 = pow((x_receive[i / 4][0] + 1*Q),2) + pow((x_receive[i/4][1] + 3*Q),2);
+                //d7 = pow((x_receive[i / 4][0] - 1*Q),2) + pow((x_receive[i/4][1] + 3*Q),2);
+                //d8 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] + 3*Q),2);
+                //s1 = /*pow((x_receive[i / 4][0] + 3*Q),2) +*/ pow((x_receive[i/4][1] - 1*Q),2);         // X1 = 1
+                //s2 = pow((x_receive[i / 4][0] + 1*Q),2) + pow((x_receive[i/4][1] - 1*Q),2);
+                //s3 = pow((x_receive[i / 4][0] - 1*Q),2) + pow((x_receive[i/4][1] - 1*Q),2);
+                //s4 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] - 1*Q),2);
+                //s5 = /*pow((x_receive[i / 4][0] + 3*Q),2) + */pow((x_receive[i/4][1] - 3*Q),2);
+                //s6 = pow((x_receive[i / 4][0] + 1*Q),2) + pow((x_receive[i/4][1] - 3*Q),2);
+                //s7 = pow((x_receive[i / 4][0] - 1*Q),2) + pow((x_receive[i/4][1] - 3*Q),2);
+                //s8 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] - 3*Q),2);
+                //if (i == 0)printf("%g,%g,%g,%g,%g,%g,%g,%g\n",d1,d2,d3,d4,d5,d6,d7,d8);
+                //if (i == 0)printf("min = %g\n\n",minimum(d1,d2,d3,d4,d5,d6,d7,d8));
+                //if (i == 0)printf("min = %g \n\n", minimum(s1,s2,s3,s4,s5,s6,s7,s8));
                 Lj[i] = 0.4 * 0.5 * ebn0 * (- minimum(d1,d2,d3,d4,d5,d6,d7,d8) + minimum(s1,s2,s3,s4,s5,s6,s7,s8));    // L1 : for first bit in symbol 
+                //Lj[i] =  0.4*0.5 * ebn0 * (- minimum(d1,d1,d1,d1,d5,d5,d5,d5) + minimum(s1,s1,s1,s1,s5,s5,s5,s5)); 
+                if (i == 0) printf("Lj[%d] = %g\n",i,Lj[i]);
                 //printf("%g %g \n",minimum(d1,d2,d3,d4,d5,d6,d7,d8),minimum(s1,s2,s3,s4,s5,s6,s7,s8));
             } else if ((i % 4) == 1) {
                 //FOR L2
-                d1 = pow((x_receive[i / 4][0] + 3),2) + pow((x_receive[i/4][1] + 1),2);         // X2 = 0
-                d2 = pow((x_receive[i / 4][0] + 1),2) + pow((x_receive[i/4][1] + 1),2);
-                d3 = pow((x_receive[i / 4][0] - 1),2) + pow((x_receive[i/4][1] + 1),2);
-                d4 = pow((x_receive[i / 4][0] - 3),2) + pow((x_receive[i/4][1] + 1),2);
-                d5 = pow((x_receive[i / 4][0] + 3),2) + pow((x_receive[i/4][1] - 1),2);
-                d6 = pow((x_receive[i / 4][0] + 1),2) + pow((x_receive[i/4][1] - 1),2);
-                d7 = pow((x_receive[i / 4][0] - 1),2) + pow((x_receive[i/4][1] - 1),2);
-                d8 = pow((x_receive[i / 4][0] - 3),2) + pow((x_receive[i/4][1] - 1),2);
+                d1 = pow((x_receive[i / 4][0] + 3*Q),2) + pow((x_receive[i/4][1] + 1*Q),2);         // X2 = 0
+                d2 = pow((x_receive[i / 4][0] + 1*Q),2) + pow((x_receive[i/4][1] + 1*Q),2);
+                d3 = pow((x_receive[i / 4][0] - 1*Q),2) + pow((x_receive[i/4][1] + 1*Q),2);
+                d4 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] + 1*Q),2);
+                d5 = pow((x_receive[i / 4][0] + 3*Q),2) + pow((x_receive[i/4][1] - 1*Q),2);
+                d6 = pow((x_receive[i / 4][0] + 1*Q),2) + pow((x_receive[i/4][1] - 1*Q),2);
+                d7 = pow((x_receive[i / 4][0] - 1*Q),2) + pow((x_receive[i/4][1] - 1*Q),2);
+                d8 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] - 1*Q),2);
+                s1 = pow((x_receive[i / 4][0] + 3*Q),2) + pow((x_receive[i/4][1] + 3*Q),2);         // X2 = 1
+                s2 = pow((x_receive[i / 4][0] + 1*Q),2) + pow((x_receive[i/4][1] + 3*Q),2);
+                s3 = pow((x_receive[i / 4][0] - 1*Q),2) + pow((x_receive[i/4][1] + 3*Q),2);
+                s4 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] + 3*Q),2);
+                s5 = pow((x_receive[i / 4][0] + 3*Q),2) + pow((x_receive[i/4][1] - 3*Q),2);
+                s6 = pow((x_receive[i / 4][0] + 1*Q),2) + pow((x_receive[i/4][1] - 3*Q),2);
+                s7 = pow((x_receive[i / 4][0] - 1*Q),2) + pow((x_receive[i/4][1] - 3*Q),2);
+                s8 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] - 3*Q),2);
 
-                s1 = pow((x_receive[i / 4][0] + 3),2) + pow((x_receive[i/4][1] + 3),2);         // X2 = 1
-                s2 = pow((x_receive[i / 4][0] + 1),2) + pow((x_receive[i/4][1] + 3),2);
-                s3 = pow((x_receive[i / 4][0] - 1),2) + pow((x_receive[i/4][1] + 3),2);
-                s4 = pow((x_receive[i / 4][0] - 3),2) + pow((x_receive[i/4][1] + 3),2);
-                s5 = pow((x_receive[i / 4][0] + 3),2) + pow((x_receive[i/4][1] - 3),2);
-                s6 = pow((x_receive[i / 4][0] + 1),2) + pow((x_receive[i/4][1] - 3),2);
-                s7 = pow((x_receive[i / 4][0] - 1),2) + pow((x_receive[i/4][1] - 3),2);
-                s8 = pow((x_receive[i / 4][0] - 3),2) + pow((x_receive[i/4][1] - 3),2);
-                Lj[i] = 0.4 * 0.5 * ebn0 * (- minimum(d1,d2,d3,d4,d5,d6,d7,d8) + minimum(s1,s2,s3,s4,s5,s6,s7,s8));    // L2 : for first bit in symbol 
+                //d1 = /*pow((x_receive[i / 4][0] + 3*Q),2) +*/ pow((x_receive[i/4][1] + 1*Q),2);         // X2 = 0
+                //d2 = pow((x_receive[i / 4][0] + 1*Q),2) + pow((x_receive[i/4][1] + 1*Q),2);
+                //d3 = pow((x_receive[i / 4][0] - 1*Q),2) + pow((x_receive[i/4][1] + 1*Q),2);
+                //d4 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] + 1*Q),2);
+                //d5 = /*pow((x_receive[i / 4][0] + 3*Q),2) +*/ pow((x_receive[i/4][1] - 1*Q),2);
+                //d6 = pow((x_receive[i / 4][0] + 1*Q),2) + pow((x_receive[i/4][1] - 1*Q),2);
+                //d7 = pow((x_receive[i / 4][0] - 1*Q),2) + pow((x_receive[i/4][1] - 1*Q),2);
+                //d8 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] - 1*Q),2);
+                //s1 =/* pow((x_receive[i / 4][0] + 3*Q),2) + */pow((x_receive[i/4][1] + 3*Q),2);         // X2 = 1
+                //s2 = pow((x_receive[i / 4][0] + 1*Q),2) + pow((x_receive[i/4][1] + 3*Q),2);
+                //s3 = pow((x_receive[i / 4][0] - 1*Q),2) + pow((x_receive[i/4][1] + 3*Q),2);
+                //s4 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] + 3*Q),2);
+                //s5 = /*pow((x_receive[i / 4][0] + 3*Q),2) + */pow((x_receive[i/4][1] - 3*Q),2);
+                //s6 = pow((x_receive[i / 4][0] + 1*Q),2) + pow((x_receive[i/4][1] - 3*Q),2);
+                //s7 = pow((x_receive[i / 4][0] - 1*Q),2) + pow((x_receive[i/4][1] - 3*Q),2);
+                //s8 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] - 3*Q),2);
+                Lj[i] =  0.4 * 0.5 * ebn0 * (- minimum(d1,d2,d3,d4,d5,d6,d7,d8) + minimum(s1,s2,s3,s4,s5,s6,s7,s8));    // L2 : for first bit in symbol 
+                //Lj[i] =  0.4*0.5* ebn0 * (- minimum(d1,d1,d1,d1,d5,d5,d5,d5) + minimum(s1,s1,s1,s1,s5,s5,s5,s5));
+                if (i == 1) printf("Lj[%d] = %g\n",i,Lj[i]);
             } else if ((i % 4) == 2) {
                 //FOR L3
-                d1 = pow((x_receive[i / 4][0] + 3),2) + pow((x_receive[i/4][1] + 1),2);         // X3 = 0
-                d2 = pow((x_receive[i / 4][0] + 1),2) + pow((x_receive[i/4][1] + 1),2);
-                d3 = pow((x_receive[i / 4][0] + 3),2) + pow((x_receive[i/4][1] - 1),2);
-                d4 = pow((x_receive[i / 4][0] + 1),2) + pow((x_receive[i/4][1] - 1),2);
-                d5 = pow((x_receive[i / 4][0] + 3),2) + pow((x_receive[i/4][1] + 3),2);
-                d6 = pow((x_receive[i / 4][0] + 1),2) + pow((x_receive[i/4][1] + 3),2);
-                d7 = pow((x_receive[i / 4][0] + 3),2) + pow((x_receive[i/4][1] - 3),2);
-                d8 = pow((x_receive[i / 4][0] + 1),2) + pow((x_receive[i/4][1] - 3),2);
+                d1 = pow((x_receive[i / 4][0] + 3*Q),2) + pow((x_receive[i/4][1] + 1*Q),2);        // X3 = 0
+                d2 = pow((x_receive[i / 4][0] + 1*Q),2) + pow((x_receive[i/4][1] + 1*Q),2);
+                d3 = pow((x_receive[i / 4][0] + 3*Q),2) + pow((x_receive[i/4][1] - 1*Q),2);
+                d4 = pow((x_receive[i / 4][0] + 1*Q),2) + pow((x_receive[i/4][1] - 1*Q),2);
+                d5 = pow((x_receive[i / 4][0] + 3*Q),2) + pow((x_receive[i/4][1] + 3*Q),2);
+                d6 = pow((x_receive[i / 4][0] + 1*Q),2) + pow((x_receive[i/4][1] + 3*Q),2);
+                d7 = pow((x_receive[i / 4][0] + 3*Q),2) + pow((x_receive[i/4][1] - 3*Q),2);
+                d8 = pow((x_receive[i / 4][0] + 1*Q),2) + pow((x_receive[i/4][1] - 3*Q),2);
 
-                s1 = pow((x_receive[i / 4][0] - 3),2) + pow((x_receive[i/4][1] + 1),2);         // X3 = 1
-                s2 = pow((x_receive[i / 4][0] - 1),2) + pow((x_receive[i/4][1] + 1),2);
-                s3 = pow((x_receive[i / 4][0] - 1),2) + pow((x_receive[i/4][1] - 1),2);
-                s4 = pow((x_receive[i / 4][0] - 3),2) + pow((x_receive[i/4][1] - 1),2);
-                s5 = pow((x_receive[i / 4][0] - 3),2) + pow((x_receive[i/4][1] + 3),2);
-                s6 = pow((x_receive[i / 4][0] - 1),2) + pow((x_receive[i/4][1] + 3),2);
-                s7 = pow((x_receive[i / 4][0] - 1),2) + pow((x_receive[i/4][1] - 3),2);
-                s8 = pow((x_receive[i / 4][0] - 3),2) + pow((x_receive[i/4][1] - 3),2);
-                Lj[i] = 0.4 * 0.5 * ebn0 * (- minimum(d1,d2,d3,d4,d5,d6,d7,d8) + minimum(s1,s2,s3,s4,s5,s6,s7,s8));    // L3 : for first bit in symbol 
+                s1 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] + 1*Q),2);         // X3 = 1
+                s2 = pow((x_receive[i / 4][0] - 1*Q),2) + pow((x_receive[i/4][1] + 1*Q),2);
+                s3 = pow((x_receive[i / 4][0] - 1*Q),2) + pow((x_receive[i/4][1] - 1*Q),2);
+                s4 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] - 1*Q),2);
+                s5 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] + 3*Q),2);
+                s6 = pow((x_receive[i / 4][0] - 1*Q),2) + pow((x_receive[i/4][1] + 3*Q),2);
+                s7 = pow((x_receive[i / 4][0] - 1*Q),2) + pow((x_receive[i/4][1] - 3*Q),2);
+                s8 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] - 3*Q),2);
+                Lj[i] =  0.4 * 0.5 * ebn0 * (- minimum(d1,d2,d3,d4,d5,d6,d7,d8) + minimum(s1,s2,s3,s4,s5,s6,s7,s8));    // L3 : for first bit in symbol 
+                //Lj[i] =  0.4*0.5  * ebn0 * (- minimum(d1,d1,d1,d1,d2,d2,d2,d2) + minimum(s1,s1,s1,s1,s2,s2,s2,s2));
+                if (i ==2) printf("Lj[%d] = %g\n",i,Lj[i]);
             } else if ((i % 4) == 3) {
                 //FOR L4
-                d1 = pow((x_receive[i / 4][0] - 1),2) + pow((x_receive[i/4][1] + 1),2);         // X4 = 0
-                d2 = pow((x_receive[i / 4][0] + 1),2) + pow((x_receive[i/4][1] + 1),2);
-                d3 = pow((x_receive[i / 4][0] - 1),2) + pow((x_receive[i/4][1] - 1),2);
-                d4 = pow((x_receive[i / 4][0] + 1),2) + pow((x_receive[i/4][1] - 1),2);
-                d5 = pow((x_receive[i / 4][0] - 1),2) + pow((x_receive[i/4][1] + 3),2);
-                d6 = pow((x_receive[i / 4][0] + 1),2) + pow((x_receive[i/4][1] + 3),2);
-                d7 = pow((x_receive[i / 4][0] - 1),2) + pow((x_receive[i/4][1] - 3),2);
-                d8 = pow((x_receive[i / 4][0] + 1),2) + pow((x_receive[i/4][1] - 3),2);
+                d1 = pow((x_receive[i / 4][0] - 1*Q),2)+ pow((x_receive[i/4][1] + 1*Q),2);       // X4 = 0
+                d2 = pow((x_receive[i / 4][0] + 1*Q),2)+ pow((x_receive[i/4][1] + 1*Q),2);
+                d3 = pow((x_receive[i / 4][0] - 1*Q),2) + pow((x_receive[i/4][1] - 1*Q),2);
+                d4 = pow((x_receive[i / 4][0] + 1*Q),2) + pow((x_receive[i/4][1] - 1*Q),2);
+                d5 = pow((x_receive[i / 4][0] - 1*Q),2) + pow((x_receive[i/4][1] + 3*Q),2);
+                d6 = pow((x_receive[i / 4][0] + 1*Q),2) + pow((x_receive[i/4][1] + 3*Q),2);
+                d7 = pow((x_receive[i / 4][0] - 1*Q),2) + pow((x_receive[i/4][1] - 3*Q),2);
+                d8 = pow((x_receive[i / 4][0] + 1*Q),2) + pow((x_receive[i/4][1] - 3*Q),2);
 
-                s1 = pow((x_receive[i / 4][0] - 3),2) + pow((x_receive[i/4][1] + 1),2);         // X4 = 1
-                s2 = pow((x_receive[i / 4][0] + 3),2) + pow((x_receive[i/4][1] + 1),2);
-                s3 = pow((x_receive[i / 4][0] + 3),2) + pow((x_receive[i/4][1] - 1),2);
-                s4 = pow((x_receive[i / 4][0] - 3),2) + pow((x_receive[i/4][1] - 1),2);
-                s5 = pow((x_receive[i / 4][0] - 3),2) + pow((x_receive[i/4][1] + 3),2);
-                s6 = pow((x_receive[i / 4][0] + 3),2) + pow((x_receive[i/4][1] + 3),2);
-                s7 = pow((x_receive[i / 4][0] + 3),2) + pow((x_receive[i/4][1] - 3),2);
-                s8 = pow((x_receive[i / 4][0] - 3),2) + pow((x_receive[i/4][1] - 3),2);
-                Lj[i] = 0.4 * 0.5 * ebn0 * (- minimum(d1,d2,d3,d4,d5,d6,d7,d8) + minimum(s1,s2,s3,s4,s5,s6,s7,s8));    // L4 : for first bit in symbol 
+                s1 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] + 1*Q),2);       // X4 = 1
+                s2 = pow((x_receive[i / 4][0] + 3*Q),2) + pow((x_receive[i/4][1] + 1*Q),2);
+                s3 = pow((x_receive[i / 4][0] + 3*Q),2) + pow((x_receive[i/4][1] - 1*Q),2);
+                s4 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] - 1*Q),2);
+                s5 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] + 3*Q),2);
+                s6 = pow((x_receive[i / 4][0] + 3*Q),2) + pow((x_receive[i/4][1] + 3*Q),2);
+                s7 = pow((x_receive[i / 4][0] + 3*Q),2) + pow((x_receive[i/4][1] - 3*Q),2);
+                s8 = pow((x_receive[i / 4][0] - 3*Q),2) + pow((x_receive[i/4][1] - 3*Q),2);
+                Lj[i] =  0.4 * 0.5 * ebn0 * (- minimum(d1,d2,d3,d4,d5,d6,d7,d8) + minimum(s1,s2,s3,s4,s5,s6,s7,s8));    // L4 : for first bit in symbol 
+                //Lj[i] =  0.4*0.5  * ebn0 * (- minimum(d1,d1,d1,d1,d2,d2,d2,d2) + minimum(s1,s1,s1,s1,s2,s2,s2,s2));
+                if (i == 3) printf("Lj[%d] = %g\n",i,Lj[i]);
             } else Lj[i] = 0;
         } // END FOR LLR
 
         // the interative decoding algotrithm
         for (j = 0; j < qijcolumn; j++)                               // initialization
-            for (i = 0; i < qijrow; i++) qij[i][j] = Lj[j];
+            for (i = 0; i < qijrow; i++) { 
+            qij[i][j] = Lj[j];
+            //printf("Lj[%d] = %g\n",j,Lj[j]);
+            }
+        for (i =0 ; i < n; i++) 
+        {
+            if (Lj[i] >= 0) qj[i] = 0;
+            else qj[i] = 1;
+        }
+        restart = 0;
+        // decision
+        for (i = 0; i < comput2len; i++) comput2[i] = 0;
+        for (j = 0; j < n; j++) {
+            qj[j] = Lj[j];
+            for (i = 0; i < 3; i++) {
+                valL = M[j][i] - 1;
+                qj[j] += uij[valL][comput2[valL]];
+            }
+            //if( j == 0 || j == 1)printf("qj[%d] = %g ;",j , qj[j]);
+            if (qj[j] >= 0) output[j] = 0;
+            else if (qj[j] < 0) output[j] = 1;
+            for (i = 0; i < 3; i++) comput2[M[j][i] - 1] += 1;
+        }
+        // to check Hx=0     
+        for (i = 0; i < rc; i++) {
+            checkbit[i] = 0;
+            for (j = 0; j < 6; j++) checkbit[i] += output[L[i][j] - 1];
+            checkbit[i] = checkbit[i] % 2;
+        }
+        for (i = 0; i < rc; i++) if (checkbit[i] == 0) restart += 1;
+        printf("restat = %d\n",restart);//sigma = 0.812831;rt);
         // message passing, for predetermined threshold = 200
         for (k = 0; k < 100 && restart != rc; k++) {
             restart = 0;
             //printf("k = %d ",k);
-            // bottom-up
-            for (i = 0; i < 5; i++) tempqij[i] = 0.0;
+            
+            for (i = 0; i < 5; i++) tempqij[i] = 0.0;           // bottom-up
             for (i = 0; i < computlen; i++) comput[i] = 0;
             for (i = 0; i < rc; i++) {
                 for (j = 0; j < 6; j++) {
@@ -368,8 +469,10 @@ int main() {
                     tempuij = tempqij[0];
                     for(m = 1; m < 5; m++) tempuij = CHK(tempuij, tempqij[m]);
                     uij[i][j] = tempuij;
+                    //printf("uij[%d][%d]=%g ;",i,j,uij[i][j]);
                 }
                 for (m = 0; m < 6; m++) comput[L[i][m] - 1] += 1;
+                //printf("\n");
             }
 
             //top-down
@@ -399,6 +502,7 @@ int main() {
                     valL = M[j][i] - 1;
                     qj[j] += uij[valL][comput2[valL]];
                 }
+                //if( j == 0 || j == 1 || j == 2 || j==3)printf("qj[%d] = %g ;",j , qj[j]);
                 if (qj[j] >= 0) output[j] = 0;
                 else if (qj[j] < 0) output[j] = 1;
                 for (i = 0; i < 3; i++) comput2[M[j][i] - 1] += 1;
@@ -411,23 +515,32 @@ int main() {
             }
             for (i = 0; i < rc; i++) if (checkbit[i] == 0) restart += 1; // restart = 512 is success
             //printf("restart =%d\n",restart);
-        
-        }// end for iteration
+            stp = 0;
+            if (k == 99 && restart != rc) {
+                stp = 1;
+                error_block++;
+            }
+        }
+        // end for iteration
         printf("errorblock = %d num %d \n",error_block,num);
         error = 0;
-        for(i = 0; i < n; i++) if (output[i] != codarray[i]) error += 1;
-        if (error != 0) {
+        for(i = 0; i < n; i++) 
+            if (output[i] != codarray[i]) {
+            //printf("i = %d ", i);
+            error += 1;
+            }
+        if (error != 0 && stp == 0) {
             error_block++;
-            printf("error = %d \n",error);
+            printf("k = %d ; error = %d \n",k,error);
         }
         restart = 0;
         totalerror += error;
     }
     BER = (double)totalerror/(num*n);
-    FER = (double)100.0/num;
+    FER = (double)error_block/num;
     printf("totalerror = %d, BER = %g, FER = %g\n",totalerror,BER,FER);
     FILE *outfp1; 
-        outfp1 = fopen("QAM16_EEP_e922_iteration100.txt","a");
+        outfp1 = fopen("QAM16_EEP_e922_iteration100_vr1.txt","a");
         fprintf(outfp1,"SNR = %g ; BER = %g ;FER = %g\n", ebn0s, BER,FER);
     fclose(outfp1);
     return 0;
@@ -471,188 +584,88 @@ void table_symbol(int i, int a, int b, int c, int d)
 {
     if (a == 1 && b == 1 && c == 0 && d == 1)
     {
-        s[i][0] = -3;
-        s[i][1] = 3;
+        s[i][0] = -3*Q;
+        s[i][1] = 3*Q;
     }
     else if (a == 1 && b == 1 && c == 0 && d == 0)
     {
-        s[i][0] = -1;
-        s[i][1] = 3;
+        s[i][0] = -1*Q;
+        s[i][1] = 3*Q;
     }
     else if (a == 1 && b == 1 && c == 1 && d == 0)
     {
-        s[i][0] = 1;
-        s[i][1] = 3;
+        s[i][0] = 1*Q;
+        s[i][1] = 3*Q;
     }
     else if (a == 1 && b == 1 && c == 1 && d == 1)
     {
-        s[i][0] = 3;
-        s[i][1] = 3;
+        s[i][0] = 3*Q;
+        s[i][1] = 3*Q;
     }
     else if (a == 1 && b == 0 && c == 0 && d == 1)
     {
-        s[i][0] = -3;
-        s[i][1] = 1;
+        s[i][0] = -3*Q;
+        s[i][1] = 1*Q;
     }
     else if (a == 1 && b == 0 && c == 0 && d == 0)
     {
-        s[i][0] = -1;
-        s[i][1] = 1;
+        s[i][0] = -1*Q;
+        s[i][1] = 1*Q;
     }
     else if (a == 1 && b == 0 && c == 1 && d == 0)
     {
-        s[i][0] = 1;
-        s[i][1] = 1;
+        s[i][0] = 1*Q;
+        s[i][1] = 1*Q;
     }
     else if (a == 1 && b == 0 && c == 1 && d == 1)
     {
-        s[i][0] = 3;
-        s[i][1] = 1;
+        s[i][0] = 3*Q;
+        s[i][1] = 1*Q;
     }
     else if (a == 0 && b == 0 && c == 0 && d == 1)
     {
-        s[i][0] = -3;
-        s[i][1] = -1;
+        s[i][0] = -3*Q;
+        s[i][1] = -1*Q;
     }
     else if (a == 0 && b == 0 && c == 0 && d == 0)
     {
-        s[i][0] = -1;
-        s[i][1] = -1;
+        s[i][0] = -1*Q;
+        s[i][1] = -1*Q;
     }
     else if (a == 0 && b == 0 && c == 1 && d == 0)
     {
-        s[i][0] = 1;
-        s[i][1] = -1;
+        s[i][0] = 1*Q;
+        s[i][1] = -1*Q;
     }
     else if (a == 0 && b == 0 && c == 1 && d == 1)
     {
-        s[i][0] = 3;
-        s[i][1] = -1;
+        s[i][0] = 3*Q;
+        s[i][1] = -1*Q;
     }
     else if (a == 0 && b == 1 && c == 0 && d == 1)
     {
-        s[i][0] = -3;
-        s[i][1] = -3;
+        s[i][0] = -3*Q;
+        s[i][1] = -3*Q;
     }
     else if (a == 0 && b == 1 && c == 0 && d == 0)
     {
-        s[i][0] = -1;
-        s[i][1] = -3;
+        s[i][0] = -1*Q;
+        s[i][1] = -3*Q;
     }
     else if (a == 0 && b == 1 && c == 1 && d == 0)
     {
-        s[i][0] = 1;
-        s[i][1] = -3;
+        s[i][0] = 1*Q;
+        s[i][1] = -3*Q;
     }
     else if (a == 0 && b == 1 && c == 1 && d == 1)
     {
-        s[i][0] = 3;
-        s[i][1] = -3;
+        s[i][0] = 3*Q;
+        s[i][1] = -3*Q;
     }
     else
     {
-        s[i][0] = 0;
-        s[i][1] = -0;
-    }
-}
-void x_estimate_m(int i, double a, double b){
-    if (a >= 2) m_estimate[i][0] = 3;
-    else if (a < 2 && a >= 0) m_estimate[i][0] = 1;
-    else if (a < 0 && a >= -2) m_estimate[i][0] = -1;
-    else if (a < -2) m_estimate[i][0] = -3;
-    else m_estimate[i][0] = 0;
-    if (b >= 2) m_estimate[i][1] = 3;
-    else if (b < 2 && b >= 0) m_estimate[i][1] = 1;
-    else if (b < 0 && b >= -2) m_estimate[i][1] = -1;
-    else if (b < -2) m_estimate[i][1] = -3;
-    else m_estimate[i][1] = 0;
-}
-void table_receive(int i, double a, double b) {
-    if (a == -3 && b == 3) {
-        receive_sym[i][0] = 1;
-        receive_sym[i][1] = 1;
-        receive_sym[i][2] = 0;
-        receive_sym[i][3] = 1;
-    } else if (a == -1 && b == 3) {
-        receive_sym[i][0] = 1;
-        receive_sym[i][1] = 1;
-        receive_sym[i][2] = 0;
-        receive_sym[i][3] = 0;
-    } else if (a == 1 && b == 3) {
-        receive_sym[i][0] = 1;
-        receive_sym[i][1] = 1;
-        receive_sym[i][2] = 1;
-        receive_sym[i][3] = 0;
-    } else if (a == 3 && b == 3) {
-        receive_sym[i][0] = 1;
-        receive_sym[i][1] = 1;
-        receive_sym[i][2] = 1;
-        receive_sym[i][3] = 1;
-    } else if (a == -3 && b == 1) {
-        receive_sym[i][0] = 1;
-        receive_sym[i][1] = 0;
-        receive_sym[i][2] = 0;
-        receive_sym[i][3] = 1;
-    } else if (a == -1 && b == 1) {
-        receive_sym[i][0] = 1;
-        receive_sym[i][1] = 0;
-        receive_sym[i][2] = 0;
-        receive_sym[i][3] = 0;
-    } else if (a == 1 && b == 1) {
-        receive_sym[i][0] = 1;
-        receive_sym[i][1] = 0;
-        receive_sym[i][2] = 1;
-        receive_sym[i][3] = 0;
-    } else if (a == 3 && b == 1) {
-        receive_sym[i][0] = 1;
-        receive_sym[i][1] = 0;
-        receive_sym[i][2] = 1;
-        receive_sym[i][3] = 1;
-    } else if (a == -3 && b == -1) {
-        receive_sym[i][0] = 0;
-        receive_sym[i][1] = 0;
-        receive_sym[i][2] = 0;
-        receive_sym[i][3] = 1;
-    } else if (a == -1 && b == -1) {
-        receive_sym[i][0] = 0;
-        receive_sym[i][1] = 0;
-        receive_sym[i][2] = 0;
-        receive_sym[i][3] = 0;
-    } else if (a == 1 && b == -1) {
-        receive_sym[i][0] = 0;
-        receive_sym[i][1] = 0;
-        receive_sym[i][2] = 1;
-        receive_sym[i][3] = 0;
-    } else if (a == 3 && b == -1) {
-        receive_sym[i][0] = 0;
-        receive_sym[i][1] = 0;
-        receive_sym[i][2] = 1;
-        receive_sym[i][3] = 1;
-    } else if (a == -3 && b == -3) {
-        receive_sym[i][0] = 0;
-        receive_sym[i][1] = 1;
-        receive_sym[i][2] = 0;
-        receive_sym[i][3] = 1;
-    } else if (a == -1 && b == -3) {
-        receive_sym[i][0] = 0;
-        receive_sym[i][1] = 1;
-        receive_sym[i][2] = 0;
-        receive_sym[i][3] = 0;
-    } else if (a == 1 && b == -3) {
-        receive_sym[i][0] = 0;
-        receive_sym[i][1] = 1;
-        receive_sym[i][2] = 1;
-        receive_sym[i][3] = 0;
-    } else if (a == 3 && b == -3) {
-        receive_sym[i][0] = 0;
-        receive_sym[i][1] = 1;
-        receive_sym[i][2] = 1;
-        receive_sym[i][3] = 1;
-    } else {
-        receive_sym[i][0] = 0;
-        receive_sym[i][1] = 0;
-        receive_sym[i][2] = 0;
-        receive_sym[i][3] = 0; 
+        s[i][0] = 0*Q;
+        s[i][1] = -0*Q;
     }
 }
 

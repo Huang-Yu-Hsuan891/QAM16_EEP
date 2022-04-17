@@ -59,7 +59,7 @@ int main() {
 
     // open file
     FILE *fpr;
-    fpr=fopen("paritycheckmatrixeep461.txt","r");
+    fpr=fopen("paritycheckmatrixeep461_vr1.txt","r");
     fscanf(fpr,"%d",&n);
     fscanf(fpr,"%d",&rc);
     printf("column = %d; row = %d\n", n, rc);
@@ -99,7 +99,7 @@ int main() {
     // close file
     // OPEN FILE
     FILE *fpr1;
-    fpr1=fopen("generatoreep461.txt","r");
+    fpr1=fopen("generatoreep461_vr1.txt","r");
     printf("column = %d\n", n);
     printf("row = %d\n", krc);
     Glenrow = krc;
@@ -148,7 +148,7 @@ int main() {
     recieve_codarray = (int *)malloc(codarraylen * sizeof(int));
 
 
-    double ebn0s = 6.8;//SNR
+    double ebn0s = 4.2;//SNR
     double ebn0;
     double sigma;
     //sigma = sqrt(5.0 / (pow(10, ebn0s / 10)));
@@ -427,7 +427,7 @@ int main() {
     FER = (double)100.0/num;
     printf("totalerror = %d, BER = %g, FER = %g\n",totalerror,BER,FER);
     FILE *outfp1; 
-        outfp1 = fopen("QAM16_EEP_e461_iteration100.txt","a");
+        outfp1 = fopen("QAM16_EEP_e461_iteration100_vr1.txt","a");
         fprintf(outfp1,"SNR = %g ; BER = %g ;FER = %g\n", ebn0s, BER,FER);
     fclose(outfp1);
     return 0;
